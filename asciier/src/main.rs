@@ -1,10 +1,10 @@
 mod image;
 mod misc;
 mod pref;
+mod config;
+mod wincap;
+mod files;
 
 fn main() {
-    match image::get_image(){
-        Ok(di) => image::process_luma8(&di,pref::str0),
-        Err(b) => println!("Error: {:?}",b)
-    }
+    config::configure();
 }

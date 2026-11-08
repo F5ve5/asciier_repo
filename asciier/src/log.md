@@ -127,4 +127,28 @@ It seems that writing the image as ascii is surprisingly close already, although
 different levels of brightness and also come up with a small system for generalizing single areas of the image into a single character rather than one for each
 pixel.
 
+---
+
+It has been done. I retrieve the image from the filepath relative to the project (so if the project is asciier then I go into asciier/bilder) which gives me a
+DynamicImage variant which I can easily convert into Luma8 and continue to read the pixel data of in a loop where in the same loop the u8 value gets mapped to
+between 0 and the length of the designated string containing all of the different brightness representative characters where the character is retrieved and printed
+onto the background, the next row of the image is accounted for by a newline and that's it. Simple.
+
+---
+
+Before starting to work on genrative special ASCII effects on the images, I want to attempt to deploy the capability of ASCIIfying a chosen screen or program,
+which means that the best choice is probably to make use of some form of recording crate, which it happens there are not too many of
+
+---
+
+I ended up going with the Windows Capture crate, it seems like the optimal and most complete choice for my situation and I've used windows stuff a lil in my other
+project
+
+The calling convention seems to be similar to etw in that one of my functions is passed to the system so that it may call It whenever feasible and give me data in
+doing so, along with that the data given can be configured through settings beforehand and whatnot..
+
+
+---
+
+
 

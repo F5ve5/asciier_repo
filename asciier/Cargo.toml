@@ -5,3 +5,5 @@ edition = "2024"
 
 [dependencies]
 image = "0.25.10"
+windows-capture = "=2.0.0-alpha.6"
+bincode = { version = "2", features = ["serde"] }

@@ -1,4 +1,10 @@
-pub static xpixels_per_char: u16 = 22;
-pub static x_to_y_ratio: u16 = 2;
+pub static STRS: [&'static str; 3] = [
+    " -.,:rs*tTSMå0%@",
+    "  -,;iIp*12S08#@",
+    "  --.,:;*x£0%"
+];
 
-pub static str0: &'static str = "@%0åMSTt*sr:,.- ";
+pub static CONFIG_NAME: &'static str = "config.bin";
+pub static PIC_FOLDER_NAME: &'static str = "bilderr";
+
+pub const ROCK_LEE: &[u8] = include_bytes!("../bilder/90648990d46ce04d7a6eeac0e70d5a80.jpg");
