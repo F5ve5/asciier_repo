@@ -24,9 +24,10 @@ pub fn check_config() -> (Option<config::Config>,String) {
 
     let file_name = pref::CONFIG_NAME;
 
-    match std::fs::read(file_name){
+    match std::fs::read(pref::CONFIG_NAME){
 
         Ok(config_se) => {
+
             let (config_de, _): (Config, usize) = match bincode::decode_from_slice::<Config, _>(
                     &config_se,
                     bincode::config::standard()
@@ -40,7 +41,7 @@ pub fn check_config() -> (Option<config::Config>,String) {
                         .open(file_name)
                         .expect("Failed to create config file");
 
-                    return (None, String::from("Old config file corrupted, new one created"))
+                    return (None, String::from("Bincode failed to read config, new config file created"))
                 }
             };
 
@@ -61,6 +62,18 @@ pub fn check_config() -> (Option<config::Config>,String) {
     };
 }
 
-pub fn update_config(new_config: config::Config) -> std::io::Result<()>{
-    Ok(())
+pub fn update_config(new: &config::Config) -> std::io::Result<()> {
+
+    if std::path::Path::new(pref::CONFIG_NAME).is_file(){
+        let new_se: Vec<u8> = bincode::encode_to_vec(
+            &new,
+            bincode::config::standard()
+        ).unwrap();
+
+        std::fs::write(pref::CONFIG_NAME, new_se)?;
+        Ok(())
+    }else{
+        Err(std::io::Error::new(std::io::ErrorKind::NotADirectory, "Couldn't update config file. File not detected"))
+    }
+
 }

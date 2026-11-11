@@ -3,7 +3,7 @@ use crate::image;
 use crate::pref;
 
 use std::time::Duration;
-use std::{io, path::PathBuf};
+use std::io;
 
 #[derive(bincode::Decode,bincode::Encode,Debug)]
 pub struct Config{
@@ -25,12 +25,21 @@ pub fn init(){
 }
 
 pub fn configure() -> Config{
-    
-    let mut config = Config{
-        image_dir: String::from("lalala"),
-        x_per_c: 6,
-        y_ratio: 2,
-        b_str: String::from(" .,-*ow9@")
+
+    let mut config = match files::check_config(){
+        (Some(c),msg) => {
+            println!("{}",msg);
+            c
+        },
+        (None, msg) => {
+            println!("{}",msg);
+            Config{
+                image_dir: String::from("lalala"),
+                x_per_c: 6,
+                y_ratio: 2,
+                b_str: String::from(" .,-*ow9@")
+            }
+        }
     };
 
     let mut i_buf = String::new();
@@ -72,6 +81,12 @@ pub fn configure() -> Config{
                 continue;
             }
         }
+
+        println!();
+        match files::update_config(&config){
+            Ok(_) => println!("Config updated successfully"),
+            Err(e) => println!("Could not update config: {}",e)
+        }
     }
 }
 
@@ -82,7 +97,7 @@ fn pick_image(c: &mut Config) {
     println!();
     println!("Choose Image to ASCIIfy (Enter the number)");
     println!("Press Enter to leave as default ({:?})", c.image_dir);
-    let fnames: Vec<String> = std::fs::read_dir("bilder")
+    let fnames: Vec<String> = std::fs::read_dir(pref::PIC_FOLDER_NAME)
         .unwrap()
         .filter_map(|entry| {
             entry.ok()?.file_name().into_string().ok()
