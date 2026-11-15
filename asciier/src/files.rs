@@ -20,7 +20,7 @@ pub fn check_pic_folder() -> bool {
     }
 }
 
-pub fn check_config() -> (Option<config::Config>,String) {
+pub fn check_config() -> Option<Config> {
 
     let file_name = pref::CONFIG_NAME;
 
@@ -41,11 +41,11 @@ pub fn check_config() -> (Option<config::Config>,String) {
                         .open(file_name)
                         .expect("Failed to create config file");
 
-                    return (None, String::from("Bincode failed to read config, new config file created"))
+                    return None
                 }
             };
 
-            return (Some(config_de), String::from("Config loaded"))
+            return Some(config_de)
         },
 
         Err(_) => {
@@ -56,7 +56,7 @@ pub fn check_config() -> (Option<config::Config>,String) {
                 .open(file_name)
                 .expect("Failed to create config file");
 
-            return (None, String::from("No config file, new one created"))
+            return None
         }
 
     };

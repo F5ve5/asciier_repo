@@ -1,6 +1,9 @@
+use crate::misc;
 use crate::files;
 use crate::image;
 use crate::pref;
+use crate::wincap;
+use crate::fax;
 
 use std::time::Duration;
 use std::io;
@@ -13,39 +16,35 @@ pub struct Config{
     pub b_str: String,
 }
 
-pub fn init(){
+pub fn init() -> Config{
     if !files::check_pic_folder(){
-        println!();
-        println!("A folder containing a test pic has been created at {:?}", std::env::current_dir().unwrap());
-        println!("It's called {}", pref::PIC_FOLDER_NAME);
-        println!("Paste pictures of your own in there and keep going to ASCCIfy them");
-        println!("This will only be shown when the pic folder is not found");
-        std::thread::sleep(Duration::from_secs(3));
+        fax::help();
     }
+
+    let config;
+    if let Some(c) = files::check_config(){
+        config = c;
+    }else{
+        fax::help();
+
+        config = Config{
+            image_dir: String::from("x"),
+            x_per_c: 5,
+            y_ratio: 2,
+            b_str: String::from(" ¨.,:-;~¤!£#@")
+        }
+    }
+
+    config
 }
 
-pub fn configure() -> Config{
 
-    let mut config = match files::check_config(){
-        (Some(c),msg) => {
-            println!("{}",msg);
-            c
-        },
-        (None, msg) => {
-            println!("{}",msg);
-            Config{
-                image_dir: String::from("lalala"),
-                x_per_c: 6,
-                y_ratio: 2,
-                b_str: String::from(" .,-*ow9@")
-            }
-        }
-    };
+pub fn configure(mut c: Config) {
 
     let mut i_buf = String::new();
 
     loop{
-        println!("Enter 1 to ASCCIfy an image, 2 to ASCIIfy live recording");
+        println!("Enter 1 to ASCCIfy an image, press 2 for help with recording etc.");
 
         i_buf.clear();
         io::stdin().read_line(&mut i_buf).unwrap();
@@ -60,21 +59,20 @@ pub fn configure() -> Config{
 
         match choice{
             1 => {
-                pick_image(&mut config);
-                image_settings(&mut config);
+                pick_image(&mut c);
+                image_settings(&mut c);
 
-                let di = match image::get_image(&config.image_dir){
+                let di = match image::get_image(&c.image_dir){
                     Ok(di) => {di},
                     Err(e) => {
-                        println!("Unable to process supposed image file {} : {:?}", config.image_dir, e);
+                        println!("Unable to process supposed image file {} : {:?}", c.image_dir, e);
                         continue;
                     }
                 };
-                image::print_dynamic_image(&di, &config);
+                image::print_dynamic_image(&di, &c);
             }
             2 => {
-                println!("Not supported yet big dawg sry bout that");
-                continue;
+                break;
             }
             _ => {
                 println!("Invalid input... Try again");
@@ -83,11 +81,12 @@ pub fn configure() -> Config{
         }
 
         println!();
-        match files::update_config(&config){
+        match files::update_config(&c){
             Ok(_) => println!("Config updated successfully"),
             Err(e) => println!("Could not update config: {}",e)
         }
     }
+
 }
 
 fn pick_image(c: &mut Config) {

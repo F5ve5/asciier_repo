@@ -147,8 +147,15 @@ project
 The calling convention seems to be similar to etw in that one of my functions is passed to the system so that it may call It whenever feasible and give me data in
 doing so, along with that the data given can be configured through settings beforehand and whatnot..
 
-
 ---
 
+I have currently been stuck on a problem for just above 2 hours which I can't solve because it makes about as much sense as eldritch witchcraft, wincap refuses to
+launch after the line
 
+let item = windows_capture::graphics_capture_picker::GraphicsCapturePicker::pick_item().expect("Failed to pick item");
 
+and instead chooses to immediately return Ok(None) which doesn't make it any less mysterious
+
+this'd be manageable if it didn't mean that I can't have something like "enter 2 if you want to use wincap" because f*ck me I guess
+
+---

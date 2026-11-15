@@ -3,9 +3,15 @@ mod misc;
 mod pref;
 mod config;
 mod files;
+mod wincap;
+mod args;
+mod fax;
 
 fn main() {
-    config::init();
 
-    config::configure();
+
+    let config = config::init();
+
+
+    config::configure(config);
 }
