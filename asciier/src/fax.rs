@@ -2,27 +2,50 @@ use crate::pref;
 
 pub fn help(){
     println!(
-        "The following message is shown when the image or config folder is not found or when help is requested:\n
-        \n
-        Welcome to ASCIIfy, where you can print your favorite images or even a live recording as ASCII art\n
-        \n
-        A folder has been created at {:?} called {:?}\n
-        By default it contains one preview image, put any images you wish to ASCIIfy in it before pressing Enter\n",
-        std::env::current_dir().unwrap(), pref::PIC_FOLDER_NAME
-        );
-    println!();
-    println!(
-        "In order to ASCIIfy a live screen, you have to use command line invocation,\n
-        The reason being that Windows Capture mysteriously abandons functionality after a single readline is used\n
-        \n
-        So open the terminal and navigate to the directory of the .exe which is probably\n
-        {:?}\n
-        So enter\n
-        cd {:?}\n
-        into the terminal and then enter\n
-        .\\asciier.exe 2\n
-        which will open a windows interface which lets you choose the screen or window that you would like to ASCIIfy™\n",
-        std::env::current_dir().unwrap(),std::env::current_dir().unwrap()
-        );
-    println!();
+r#"
+============================================================
+
+Welcome to ASCIIfy! Print your favorite images or even a live
+screen recording as ASCII art.
+
+GETTING STARTED
+------------------------------------------------------------
+
+A folder called "{pic_folder}" has been created at:
+
+    {current_dir}
+
+By default, it contains a preview image. Simply place any
+images you wish to ASCIIfy inside this folder, then press Enter.
+
+
+LIVE SCREEN CAPTURE
+------------------------------------------------------------
+
+To ASCIIfy a live screen or window, you must launch the
+application through PowerShell.
+
+Due to an issue with Windows Capture, the capture functionality
+stops working after a single readline operation.
+
+To work around this:
+
+1. Open PowerShell.
+
+2. Navigate to the directory containing the executable:
+
+       cd "{current_dir}"
+
+3. Launch ASCIIfy with the following argument:
+
+       .\asciier.exe 1
+
+4. A Windows interface will appear, allowing you to select
+   the screen or window you wish to ASCIIfy.
+
+============================================================
+"#,
+        pic_folder = pref::PIC_FOLDER_NAME,
+        current_dir =  std::env::current_dir().unwrap().display()
+    );
 }

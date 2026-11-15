@@ -159,3 +159,12 @@ and instead chooses to immediately return Ok(None) which doesn't make it any les
 this'd be manageable if it didn't mean that I can't have something like "enter 2 if you want to use wincap" because f*ck me I guess
 
 ---
+
+Fixed the issue by supplying the "render an image or a live recording" optionality through command line intergration or whatever it is called
+
+So now you navigate to the directory of the exe in Powershell and launch it along with 1 like .\asciier.exe 1 in order to launch asciier in wincap mode basically.
+
+It really is unusual how it breaks after a readline like that shi make no sense...
+
+---
+

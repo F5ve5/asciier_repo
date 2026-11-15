@@ -1,9 +1,8 @@
 pub fn retrieve() -> u8{
-    let choice: u8 = std::env::args()
-    .nth(1)
-    .expect("No argument provided")
-    .parse()
-    .expect("Invalid input");
-
-    choice
+    (
+    std::env::args()
+        .nth(1)
+        .and_then(|arg| arg.parse::<i32>().ok())
+        .unwrap_or(0)
+    ) as u8
 }

@@ -8,10 +8,9 @@ mod args;
 mod fax;
 
 fn main() {
-
+    let args = args::retrieve();
 
     let config = config::init();
 
-
-    config::configure(config);
+    config::configure(config,args);
 }

@@ -1,3 +1,5 @@
+use windows_capture::graphics_capture_picker::PickedGraphicsCaptureItem;
+
 use crate::misc;
 use crate::files;
 use crate::image;
@@ -5,7 +7,6 @@ use crate::pref;
 use crate::wincap;
 use crate::fax;
 
-use std::time::Duration;
 use std::io;
 
 #[derive(bincode::Decode,bincode::Encode,Debug)]
@@ -17,15 +18,17 @@ pub struct Config{
 }
 
 pub fn init() -> Config{
+    let mut help = false;
+
     if !files::check_pic_folder(){
-        fax::help();
+        help = true;
     }
 
     let config;
     if let Some(c) = files::check_config(){
         config = c;
     }else{
-        fax::help();
+        help = true;
 
         config = Config{
             image_dir: String::from("x"),
@@ -35,16 +38,34 @@ pub fn init() -> Config{
         }
     }
 
+    if help{
+        fax::help();
+    }
+
     config
 }
 
 
-pub fn configure(mut c: Config) {
+pub fn configure(mut c: Config, args: u8) {
+
+    if args == 1{
+        let mut item: Option<PickedGraphicsCaptureItem> = None;
+        if let Some(i) = windows_capture::graphics_capture_picker::GraphicsCapturePicker::pick_item().expect("Failed to pick item"){
+            item = Some(i);
+        }else{
+            panic!("item picker failed")
+        }
+
+        settings(&mut c);
+
+        wincap::spawn_wincap(item,c);
+
+        return
+    }
 
     let mut i_buf = String::new();
-
     loop{
-        println!("Enter 1 to ASCCIfy an image, press 2 for help with recording etc.");
+        println!("Enter 1 to ASCCIfy an image, Enter 2 for help with streaming etc. Enter 3 to close");
 
         i_buf.clear();
         io::stdin().read_line(&mut i_buf).unwrap();
@@ -60,7 +81,7 @@ pub fn configure(mut c: Config) {
         match choice{
             1 => {
                 pick_image(&mut c);
-                image_settings(&mut c);
+                settings(&mut c);
 
                 let di = match image::get_image(&c.image_dir){
                     Ok(di) => {di},
@@ -72,7 +93,11 @@ pub fn configure(mut c: Config) {
                 image::print_dynamic_image(&di, &c);
             }
             2 => {
-                break;
+                fax::help();
+                continue;
+            }
+            3 => {
+                return;
             }
             _ => {
                 println!("Invalid input... Try again");
@@ -94,7 +119,7 @@ fn pick_image(c: &mut Config) {
     let mut i_buf = String::new();
 
     println!();
-    println!("Choose Image to ASCIIfy (Enter the number)");
+    println!("Choose Image to ASCIIfy (Enter the number to its' left)");
     println!("Press Enter to leave as default ({:?})", c.image_dir);
     let fnames: Vec<String> = std::fs::read_dir(pref::PIC_FOLDER_NAME)
         .unwrap()
@@ -134,7 +159,7 @@ fn pick_image(c: &mut Config) {
     }
 }
 
-pub fn image_settings(c: &mut Config){
+pub fn settings(c: &mut Config){
     let mut i_buf = String::new();
 
     println!();
@@ -162,7 +187,7 @@ pub fn image_settings(c: &mut Config){
     }
 
     println!();
-    println!("Set ratio between X and Y for accounted for pixels");
+    println!("Set ratio between X and Y for accounted-for pixels");
     println!("Press Enter to leave as default ({})", c.y_ratio);
     loop{
         i_buf.clear();

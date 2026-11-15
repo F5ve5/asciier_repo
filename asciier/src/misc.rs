@@ -1,9 +1,3 @@
-use crossterm::{
-    event::{self, Event, KeyCode},
-    terminal::{enable_raw_mode, disable_raw_mode},
-};
-use std::io::{self, Write};
-
 pub type Errorr = Box<dyn std::error::Error>;
 pub type Resultt<T> = std::result::Result<T, Errorr>;
 
@@ -26,4 +20,8 @@ pub fn rgb_to_byteness(r: u8, g: u8, b: u8) -> u8 {
         0.7152 * g as f32 +
         0.0722 * b as f32
     ) as u8
+}
+
+pub fn delay_millis(millis: u64){
+    std::thread::sleep(std::time::Duration::from_millis(millis));
 }
