@@ -6,6 +6,7 @@ mod files;
 mod wincap;
 mod args;
 mod fax;
+mod print;
 
 fn main() {
     let args = args::retrieve();

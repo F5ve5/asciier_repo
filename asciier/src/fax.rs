@@ -16,7 +16,7 @@ A folder called "{pic_folder}" has been created at:
     {current_dir}
 
 By default, it contains a preview image. Simply place any
-images you wish to ASCIIfy inside this folder, then press Enter.
+images you wish to ASCIIfy inside this folder, then enter 1.
 
 
 LIVE SCREEN CAPTURE
@@ -42,6 +42,9 @@ To work around this:
 
 4. A Windows interface will appear, allowing you to select
    the screen or window you wish to ASCIIfy.
+
+Do note that frames will only start being printed when the
+chosen display is updated
 
 ============================================================
 "#,

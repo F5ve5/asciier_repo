@@ -1,4 +1,4 @@
-use crate::{config, misc};
+use crate::{config,print,print::FromConfig};
 
 use config::Config;
 
@@ -60,10 +60,10 @@ impl GraphicsCaptureApiHandler for StreamCap {
     }
 }
 
-struct FrameData{
-    res_width: u32,
-    res_height: u32,
-    frame_bytes: Vec<u8>
+pub struct FrameData{
+    pub res_width: u32,
+    pub res_height: u32,
+    pub frame_bytes: Vec<u8>
 }
 
 pub fn spawn_wincap(item: Option<PickedGraphicsCaptureItem>,config: Config){
@@ -88,64 +88,15 @@ pub fn spawn_wincap(item: Option<PickedGraphicsCaptureItem>,config: Config){
     );
 
     thread::spawn(move||{
-        let cc = ConvertedConfig0::from_config(config);
+        let cc = print::ConvertedConfig0::from_config(config);
         loop{
             tx0.send(true).unwrap();
 
             let fd = rx1.recv().unwrap();
 
-            print_rgba_frame(fd,&cc);
+            print::print_rgba_frame(fd,&cc);
         }
     });
 
     StreamCap::start(settings).expect("Stream capture failed");
-}
-
-use crossterm::{
-    execute,
-    terminal::{Clear, ClearType},
-    cursor::MoveTo,
-};
-use std::io::stdout;
-
-#[inline]
-fn print_rgba_frame(fd: FrameData, cc: &ConvertedConfig0){
-    execute!(
-        stdout(),
-        Clear(ClearType::All),
-        MoveTo(0, 0)
-    ).unwrap();
-
-    let w: usize = fd.res_width as usize * 4;
-
-    let mut current_column = 1;
-
-    while current_column * w  <= fd.frame_bytes.len(){
-        for pixel in fd.frame_bytes[(current_column - 1) * w..current_column * w].chunks_exact(4).step_by(cc.xpc * 4){
-            let b = misc::rgba_to_byteness(pixel[0], pixel[1], pixel[2], pixel[3]);
-            print!("{}", cc.c[misc::map_u8_to_x(b, cc.c.len())])
-        }
-        println!();
-        current_column += cc.ypc * 4;
-    }
-}
-
-struct ConvertedConfig0{
-    xpc: usize,
-    ypc: usize,
-    c: Vec<char>
-}
-
-trait FromConfig{
-    fn from_config(c: Config) -> Self;
-}
-
-impl FromConfig for ConvertedConfig0{
-    fn from_config(c: Config) -> Self {
-        Self { 
-            xpc: c.x_per_c as usize,
-            ypc: (c.y_ratio * c.x_per_c) as usize,
-            c: c.b_str.chars().collect() 
-        }
-    }
 }

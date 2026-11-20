@@ -6,6 +6,7 @@ use crate::image;
 use crate::pref;
 use crate::wincap;
 use crate::fax;
+use crate::print;
 
 use std::io;
 
@@ -15,6 +16,7 @@ pub struct Config{
     pub x_per_c: u16,
     pub y_ratio: u16,
     pub b_str: String,
+    pub color: bool
 }
 
 pub fn init() -> Config{
@@ -34,7 +36,8 @@ pub fn init() -> Config{
             image_dir: String::from("x"),
             x_per_c: 5,
             y_ratio: 2,
-            b_str: String::from(" ¨.,:-;~¤!£#@")
+            b_str: String::from(" ¨.,:-;~¤!£#@"),
+            color: false
         }
     }
 
@@ -90,7 +93,7 @@ pub fn configure(mut c: Config, args: u8) {
                         continue;
                     }
                 };
-                image::print_dynamic_image(&di, &c);
+                print::print_dynamic_image(&di, &c);
             }
             2 => {
                 fax::help();
@@ -252,6 +255,33 @@ pub fn settings(c: &mut Config){
                     continue;
                 }
             }
+        }
+        break;
+    }
+
+    println!();
+    println!("Colored or not? 1 for yes, 2 for no");
+    println!("Press enter to leave as default ({})", if c.color {"colored"}else{"not colored"});
+    loop{
+        i_buf.clear();
+        io::stdin().read_line(&mut i_buf).unwrap();
+
+        if i_buf.trim().is_empty(){
+            break;
+        }
+
+        let u: u8 = match i_buf.trim().parse(){
+            Ok(u) => u,
+            Err(_) => {
+                println!("Invalid input... Try again");
+                continue;
+            }
+        };
+
+        match u{
+            1 => {c.color = true; break;},
+            2 => {c.color = false; break;}
+            _ => println!("Invalid input... Try again")
         }
         break;
     }
