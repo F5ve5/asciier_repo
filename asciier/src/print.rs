@@ -9,41 +9,23 @@ use std::io::{Stdout, stdout};
 use std::fmt::Write;
 
 #[inline]
-pub fn print_rgba_frame(fd: wincap::FrameData, cc: &ConvertedConfig0){
-    execute!(
-        stdout(),
-        Clear(ClearType::All),
-        MoveTo(0, 0)
-    ).unwrap();
+pub fn print_rgba_frame(fd: wincap::FrameData, c: &config::Config){
+    let w: usize = fd.res_width as usize;
+    let bytes = fd.frame_bytes;
 
-    let w: usize = fd.res_width as usize * 4;
+    if c.color{
+        let s = rgba_to_colored_string(&c, bytes.as_slice(), w);
 
-    let mut current_column = 1;
-
-    if cc.cd{
-        while current_column * w  <= fd.frame_bytes.len(){
-            for pixel in fd.frame_bytes[(current_column - 1) * w..current_column * w].chunks_exact(4).step_by(cc.xpc * 4){
-                let b = misc::rgba_to_byteness(pixel[0], pixel[1], pixel[2], pixel[3]);
-                print!("{}", cc.c[misc::map_u8_to_x(b, cc.c.len())])
-            }
-            println!();
-            current_column += cc.ypc * 4;
-        }
+        println!("{}",s);
     }else{
-        while current_column * w  <= fd.frame_bytes.len(){
-            for pixel in fd.frame_bytes[(current_column - 1) * w..current_column * w].chunks_exact(4).step_by(cc.xpc * 4){
-                let b = misc::rgba_to_byteness(pixel[0], pixel[1], pixel[2], pixel[3]);
-                print!("{}", cc.c[misc::map_u8_to_x(b, cc.c.len())])
-            }
-            println!();
-            current_column += cc.ypc * 4;
-        }
+        let s = rgba_to_bnw_string(&c, bytes.as_slice(), w);
 
+        println!("{}",s);
     }
 }
 
 pub fn print_dynamic_image(di: &image::DynamicImage, config: &config::Config){
-    if config.color{
+    if config.color{ 
         let rgba = di.to_rgba8();
         
         let s = rgba_to_colored_string(&config, rgba.as_bytes(), rgba.width() as usize);
@@ -59,9 +41,10 @@ pub fn print_dynamic_image(di: &image::DynamicImage, config: &config::Config){
 }
 
 ////
-
 //When printing characters into the console, it happens to be important to keep the actual console interactions to as few as possible, so making one large string to print
 //into the console at once is the optimal approach
+
+#[inline]
 fn rgba_to_colored_string(c: &&config::Config, rgba_bytes: &[u8], width: usize) -> String{
     let mut s = String::new();
 
@@ -94,6 +77,36 @@ fn rgba_to_colored_string(c: &&config::Config, rgba_bytes: &[u8], width: usize) 
     return s
 }
 
+#[inline]
+fn rgba_to_bnw_string(c: &&config::Config, rgba_bytes: &[u8], width: usize) -> String{
+    let mut s = String::new();
+
+    let mut current_row = 1;
+    let row_jump = (c.x_per_c * c.y_ratio) as usize;
+
+    let chars: Vec<char> = c.b_str.chars().collect();
+    let cl = chars.len();
+
+    while current_row * width * 4 < rgba_bytes.len(){
+        for x in rgba_bytes[(current_row - 1) * width * 4..current_row * width * 4].chunks_exact(4).step_by(c.x_per_c as usize){
+            let char = chars[map_u8_to_x(x[0],cl)];
+
+            s.push(char);
+        }
+        write!(
+            &mut s,
+            "\n"
+        ).unwrap();
+
+        current_row += row_jump;
+    }
+
+
+
+    return s
+}
+
+#[inline]
 fn luma_to_bnw_string(c: &&config::Config, luma_bytes: &[u8], width: usize) -> String{
     let mut s = String::new();
 
@@ -120,28 +133,4 @@ fn luma_to_bnw_string(c: &&config::Config, luma_bytes: &[u8], width: usize) -> S
     s.push_str("\x1b[0m");
 
     return s
-}
-
-////
-
-pub trait FromConfig{
-    fn from_config(c: config::Config) -> Self;
-}
-
-pub struct ConvertedConfig0{
-    xpc: usize,
-    ypc: usize,
-    c: Vec<char>,
-    cd: bool
-}
-
-impl FromConfig for ConvertedConfig0{
-    fn from_config(c: config::Config) -> Self {
-        Self { 
-            xpc: c.x_per_c as usize,
-            ypc: (c.y_ratio * c.x_per_c) as usize,
-            c: c.b_str.chars().collect(),
-            cd: c.color 
-        }
-    }
 }

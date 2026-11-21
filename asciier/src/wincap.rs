@@ -1,3 +1,4 @@
+use crate::misc;
 use crate::{config,print,print::FromConfig};
 
 use config::Config;
@@ -88,13 +89,15 @@ pub fn spawn_wincap(item: Option<PickedGraphicsCaptureItem>,config: Config){
     );
 
     thread::spawn(move||{
-        let cc = print::ConvertedConfig0::from_config(config);
+        let c = config;
         loop{
             tx0.send(true).unwrap();
 
             let fd = rx1.recv().unwrap();
 
-            print::print_rgba_frame(fd,&cc);
+            print::print_rgba_frame(fd,&c);
+
+            misc::delay_millis(50);
         }
     });
 
