@@ -25,3 +25,33 @@ pub fn rgb_to_byteness(r: u8, g: u8, b: u8) -> u8 {
 pub fn delay_millis(millis: u64){
     std::thread::sleep(std::time::Duration::from_millis(millis));
 }
+
+use crossterm::{
+    execute,
+    terminal::{Clear, ClearType},
+    cursor::MoveTo,
+};
+use std::io::{stdout, Write};
+
+pub fn clear_console() -> std::io::Result<()> {
+    let mut stdout = stdout();
+
+    execute!(
+        stdout,
+        Clear(ClearType::All),
+        MoveTo(0, 0)
+    )?;
+
+    stdout.flush()
+}
+
+pub fn move_to_tl_console()-> std::io::Result<()> {
+    let mut stdout = stdout();
+
+    execute!(
+        stdout,
+        MoveTo(0, 0)
+    )?;
+
+    stdout.flush()
+}

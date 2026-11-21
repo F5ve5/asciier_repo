@@ -13,6 +13,8 @@ pub fn print_rgba_frame(fd: wincap::FrameData, c: &config::Config){
     let w: usize = fd.res_width as usize;
     let bytes = fd.frame_bytes;
 
+    misc::move_to_tl_console().unwrap();
+
     if c.color{
         let s = rgba_to_colored_string(&c, bytes.as_slice(), w);
 

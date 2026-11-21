@@ -13,5 +13,5 @@ fn main() {
 
     let config = config::init();
 
-    config::configure(config,0);
+    config::configure(config,1);
 }

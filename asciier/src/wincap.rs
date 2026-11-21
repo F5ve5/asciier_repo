@@ -1,5 +1,5 @@
 use crate::misc;
-use crate::{config,print,print::FromConfig};
+use crate::{config, print};
 
 use config::Config;
 
