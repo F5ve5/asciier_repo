@@ -7,11 +7,12 @@ mod wincap;
 mod args;
 mod fax;
 mod print;
+mod input;
 
 fn main() {
     let args = args::retrieve();
 
     let config = config::init();
 
-    config::configure(config,1);
+    config::configure(config,args);
 }

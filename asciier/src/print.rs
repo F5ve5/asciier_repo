@@ -103,8 +103,6 @@ fn rgba_to_bnw_string(c: &&config::Config, rgba_bytes: &[u8], width: usize) -> S
         current_row += row_jump;
     }
 
-
-
     return s
 }
 

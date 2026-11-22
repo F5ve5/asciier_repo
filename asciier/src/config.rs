@@ -7,6 +7,7 @@ use crate::pref;
 use crate::wincap;
 use crate::fax;
 use crate::print;
+use crate::input;
 
 use std::io;
 
@@ -70,18 +71,9 @@ pub fn configure(mut c: Config, args: u8) {
     loop{
         println!("Enter 1 to ASCCIfy an image, Enter 2 for help with streaming etc. Enter 3 to close");
 
-        i_buf.clear();
-        io::stdin().read_line(&mut i_buf).unwrap();
+        let i = input::enter_u16(1, 3, false);
 
-        let choice: u8 = match i_buf.trim().parse(){
-            Ok(c) => c,
-            Err(_) => {
-                println!("Invalid input... Try again");
-                continue;
-            }
-        };
-
-        match choice{
+        match i{
             1 => {
                 pick_image(&mut c);
                 settings(&mut c);
@@ -118,171 +110,66 @@ pub fn configure(mut c: Config, args: u8) {
 }
 
 fn pick_image(c: &mut Config) {
-
-    let mut i_buf = String::new();
-
     println!();
-    println!("Choose Image to ASCIIfy (Enter the number to its' left)");
-    println!("Press Enter to leave as default ({:?})", c.image_dir);
+    println!("Choose Image to ASCIIfy");
+    println!("Press R to leave as default ({:?})", c.image_dir);
+
     let fnames: Vec<String> = std::fs::read_dir(pref::PIC_FOLDER_NAME)
         .unwrap()
         .filter_map(|entry| {
             entry.ok()?.file_name().into_string().ok()
         })
         .collect();
-
+    let fname_refs: Vec<&str> = fnames.iter()
+        .map(|s| s.as_str())
+        .collect();
+    let index = input::choose_string(&fname_refs).unwrap();
     println!();
-    for fname in fnames.iter().enumerate(){
-        println!("{} -- {:?}", fname.0, fname.1);
-    }
 
-    loop{
-        i_buf.clear();
-        io::stdin().read_line(&mut i_buf).unwrap();
-
-        if i_buf.trim().is_empty(){
-            break;
-        }
-
-        let f: u16 = match i_buf.trim().parse(){
-            Ok(f) => f,
-            Err(_) => {
-                println!("Invalid input... Try again");
-                continue;
-            }
-        };
-
-        if f >= fnames.len() as u16{
-            println!("Invalid input... Try again");
-            continue;
-        }
-
-        c.image_dir = fnames[f as usize].clone();
-        break;
+    if index != usize::MAX{
+        c.image_dir = fnames[index].clone();
     }
 }
 
 pub fn settings(c: &mut Config){
-    let mut i_buf = String::new();
-
     println!();
-    println!("Set amount of horizontal pixels that are to be accounted for by each character");
-    println!("Recommended to leave as default unless you want a stretched output");
+    println!("Enter amount of horizontal pixels that are to be accounted for by each character");
     println!("Press Enter to leave as default ({})", c.x_per_c);
-    loop{
-        i_buf.clear();
-        io::stdin().read_line(&mut i_buf).unwrap();
-
-        if i_buf.trim().is_empty(){
-            break;
-        }
-
-        let a: u16 = match i_buf.trim().parse(){
-            Ok(a) => a,
-            Err(_) => {
-                println!("Invalid input... Try again");
-                continue;
-            }
-        };
-
-        c.x_per_c = a;
-        break;
+    if let i @ 1.. = input::enter_u16(1, 1000, true) {
+        c.x_per_c = i;
     }
 
     println!();
-    println!("Set ratio between X and Y for accounted-for pixels");
+    println!("Enter ratio between X and Y for accounted-for pixels");
+    println!("Recommended to leave as default unless you want a stretched output");
     println!("Press Enter to leave as default ({})", c.y_ratio);
-    loop{
-        i_buf.clear();
-        io::stdin().read_line(&mut i_buf).unwrap();
-
-        if i_buf.trim().is_empty(){
-            break;
-        }
-
-        let r: u16 = match i_buf.trim().parse(){
-            Ok(r) => r,
-            Err(_) => {
-                println!("Invalid input... Try again");
-                continue;
-            }
-        };
-
-        c.y_ratio = r;
-        break;
+    if let i @ 1.. = input::enter_u16(1, 1000, true) {
+        c.y_ratio = i;
     }
 
     println!();
     println!("Choose brightness string");
-    println!("Press Enter to leave as default ({})", c.b_str);
-    println!("Enter {} to write your own", pref::STRS.len());
-    println!();
-    for s in pref::STRS.iter().enumerate(){
-        println!("{} -- {}", s.0, s.1);
-    }
-    loop{
-        i_buf.clear();
-        io::stdin().read_line(&mut i_buf).unwrap();
-
-        if i_buf.trim().is_empty(){
-            break;
-        }
-
-        let s: u16 = match i_buf.trim().parse(){
-            Ok(s) => s,
-            Err(_) => {
-                println!("Invalid input... Try again");
-                continue;
-            }
-        };
-
-        if s < pref::STRS.len() as u16{
-            c.b_str = String::from(pref::STRS[s as usize]);
-        }else if s == pref::STRS.len() as u16{
+    println!("Press R to leave as default ({})", c.b_str);
+    if let Ok(i) = input::choose_string(&pref::STRS) {
+        if i == pref::STRS.len() - 1{
+            println!();
             println!("The darkest pixels will be converted to the earliest characters so it should look something like [ .:;ooO0#@]");
             println!("3 characters minimum");
-            loop{
-                i_buf.clear();
-                io::stdin().read_line(&mut i_buf).unwrap();
-
-                let trimmed = i_buf.trim();
-
-                if trimmed.chars().count() >= 3{
-                    c.b_str = trimmed.to_string();
-                    break;
-                }else{
-                    println!("Try again");
-                    continue;
-                }
-            }
+            c.b_str = input::enter_str(3, None, false).unwrap();
         }
-        break;
+        else if i < pref::STRS.len(){
+            c.b_str = String::from(pref::STRS[i]);
+        }
     }
+    println!();
 
     println!();
-    println!("Colored or not? 1 for yes, 2 for no");
-    println!("Press enter to leave as default ({})", if c.color {"colored"}else{"not colored"});
-    loop{
-        i_buf.clear();
-        io::stdin().read_line(&mut i_buf).unwrap();
-
-        if i_buf.trim().is_empty(){
-            break;
-        }
-
-        let u: u8 = match i_buf.trim().parse(){
-            Ok(u) => u,
-            Err(_) => {
-                println!("Invalid input... Try again");
-                continue;
-            }
-        };
-
-        match u{
-            1 => {c.color = true; break;},
-            2 => {c.color = false; break;}
-            _ => println!("Invalid input... Try again")
-        }
-        break;
+    println!("Colored or not?");
+    println!("Press R to leave as default ({})", if c.color {"yup"}else{"nuh uh"});
+    let yn = vec!["yea","nah"];
+    match input::choose_string(&yn).unwrap(){
+        0 => c.color = true,
+        1 => c.color = false,
+        _ => {}
     }
 }

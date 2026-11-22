@@ -1,7 +1,8 @@
-pub static STRS: [&'static str; 3] = [
+pub static STRS: [&'static str; 4] = [
     " -.,:rs*tTSMå0%@",
     "  -,;iIp*12S08#@",
-    "  --.,:;*x£0%"
+    "  --.,:;*x£0%",
+    "Make your own string"
 ];
 
 pub static CONFIG_NAME: &'static str = "config.bin";

@@ -43,8 +43,8 @@ To work around this:
 4. A Windows interface will appear, allowing you to select
    the screen or window you wish to ASCIIfy.
 
-Do note that frames will only start being printed when the
-chosen display is updated
+Do note that more characters per frame and especially colored
+characters will make live ASCIIfy noticeably slower.
 
 ============================================================
 "#,
